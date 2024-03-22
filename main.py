@@ -1,16 +1,22 @@
-# This is a sample Python script.
+import tweepy
+from dotenv import load_dotenv
+import os
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
+load_dotenv()
+
+CONSUMER_KEY = os.getenv('CONSUMER_KEY')
+CONSUMER_SECRET = os.getenv('CONSUMER_SECRET')
+ACCESS_KEY = os.getenv('ACCESS_KEY')
+ACCESS_SECRET = os.getenv('ACCESS_SECRET')
+
+auth = tweepy.OAuth1UserHandler(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_KEY, ACCESS_SECRET)
+api = tweepy.API(auth)
+
+# TODO: Store the id of the most recent responded tweet, which is then used when responding to newer mentions
+last_responded_tweet_id = 0
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+def reply_tweets():
+    mentions = api.mentions_timeline(count=30, since_id=last_responded_tweet_id)
+    for mention in reversed(mentions):
+        print("Hello world!")  # TODO: implement the reply functionality
