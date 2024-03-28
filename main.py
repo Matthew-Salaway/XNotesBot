@@ -39,7 +39,7 @@ def reply_tweets():
     global last_responded_tweet_id
 
     mentions = client.get_users_mentions(id=TWITTER_ID)
-    last_responded_tweet_id = mentions.meta.get("newest_id", "")  # handle case of missing/empty data
+    last_responded_tweet_id = mentions.meta.get("newest_id", 0)  # handle case of missing/empty data
 
     for mention in reversed(mentions.data):
         # Extract the ID of the mention
