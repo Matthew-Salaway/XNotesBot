@@ -27,6 +27,25 @@ api = tweepy.API(auth)
 # TODO: Store the id of the most recent responded tweet, which is then used when responding to newer mentions
 last_responded_tweet_id = 0
 
+# File path to store mentioned tweet IDs
+MENTIONED_TWEETS_FILE = "mentioned_tweets.txt"
+
+# Function to load mentioned tweet IDs from file
+def load_mentioned_tweets():
+    try:
+        with open(MENTIONED_TWEETS_FILE, "r") as file:
+            return set(int(line.strip()) for line in file)
+    except FileNotFoundError:
+        return set()
+
+# Function to save mentioned tweet IDs to file
+def save_mentioned_tweets(mentioned_tweets):
+    with open(MENTIONED_TWEETS_FILE, "w") as file:
+        for tweet_id in mentioned_tweets:
+            file.write(str(tweet_id) + "\n")
+
+# Load mentioned tweets from file
+mentioned_tweets = load_mentioned_tweets()
 
 def reply_tweets():
     """
@@ -37,6 +56,7 @@ def reply_tweets():
             int: The ID of the most recent responded tweet, which is then used when responding to newer mentions.
         """
     global last_responded_tweet_id
+    global mentioned_tweets
 
     mentions = client.get_users_mentions(id=TWITTER_ID)
     last_responded_tweet_id = mentions.meta.get("newest_id", 0)  # handle case of missing/empty data
@@ -44,10 +64,14 @@ def reply_tweets():
     for mention in reversed(mentions.data):
         # Extract the ID of the mention
         mention_id = mention.id
+        if mention_id in mentioned_tweets:
+            continue  # Skip if the mention has already been replied to
+        mentioned_tweets.add(mention_id)
         # Generate your reply based on the mention
         reply_text = "Hi there, thanks for the mention!"
         # Reply to the mention
         client.create_tweet(in_reply_to_tweet_id=mention_id, text=reply_text)
+    save_mentioned_tweets(mentioned_tweets)
 
     return last_responded_tweet_id
 
