@@ -60,7 +60,7 @@ def write_note(content):
     response = openai.ChatCompletion.create(
     model="gpt-4-turbo",
     messages=[{"role": "user", "content": prompt}],
-    max_tokens=150
+    max_tokens=100
         )
     model_response = response['choices'][0]['message']['content']
     print(model_response)
@@ -80,7 +80,7 @@ def hello_world():
 
 @app.route("/tweets")
 def fetch_tweets():
-    mentions = client.get_users_mentions(id=TWITTER_ID, since_id=last_responded_tweet_id)
+    mentions = client.get_users_mentions(id=TWITTER_ID ,since_id=last_responded_tweet_id)
 
     last_fetched_tweet_id = mentions.meta.get("newest_id", 0)  # handle case of missing/empty data
     if not mentions.data:
@@ -93,6 +93,7 @@ def fetch_tweets():
         if mention_id in mentioned_tweets_set:
             continue  # Skip if the mention has already been replied to
         mentioned_tweets.append(mention_id)
+        # Replace line below with 
         tweet_text = mention.text
         # Generate your reply based on the mention
         reply_text = write_note(tweet_text)
