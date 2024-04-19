@@ -2,11 +2,15 @@ from flask import Flask
 import tweepy
 from dotenv import load_dotenv
 import os
+import openai
+
 
 load_dotenv()
 app = Flask(__name__)
 
 TWITTER_ID = os.getenv('TWITTER_ID')
+OPENAI_KEY = os.getenv("OPENAI_KEY")
+openai.api_key= OPENAI_KEY
 
 
 def load_client():
@@ -51,6 +55,17 @@ def save_mentioned_tweets(mentioned_tweets):
         for tweet_id in mentioned_tweets:
             file.write(str(tweet_id) + "\n")
 
+def write_note(content):
+    prompt = f"I'm going to show you a Tweet and I would like you to make a note for this tweet. Notes are supposed to clarify potential misinformation present in the Tweet. A helpful Note should be accurate and important. I'd like you to create a Note based on a Tweet. Here is the Tweet: {content}."
+    response = openai.ChatCompletion.create(
+    model="gpt-4-turbo",
+    messages=[{"role": "user", "content": prompt}],
+    max_tokens=150
+        )
+    model_response = response['choices'][0]['message']['content']
+    print(model_response)
+    return model_response
+
 
 # Load mentioned tweets from file
 mentioned_tweets = load_mentioned_tweets()
@@ -78,8 +93,9 @@ def fetch_tweets():
         if mention_id in mentioned_tweets_set:
             continue  # Skip if the mention has already been replied to
         mentioned_tweets.append(mention_id)
+        tweet_text = mention.text
         # Generate your reply based on the mention
-        reply_text = "Hi there, thanks for the mention!"
+        reply_text = write_note(tweet_text)
         # Reply to the mention
         client.create_tweet(in_reply_to_tweet_id=mention_id, text=reply_text)
     save_mentioned_tweets(mentioned_tweets)
