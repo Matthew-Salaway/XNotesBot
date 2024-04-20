@@ -1,12 +1,14 @@
 from flask import Flask
 import tweepy
 from dotenv import load_dotenv
+from flask_apscheduler import APScheduler
 import os
 import openai
 
 
 load_dotenv()
 app = Flask(__name__)
+scheduler = APScheduler()
 
 TWITTER_ID = os.getenv('TWITTER_ID')
 OPENAI_KEY = os.getenv("OPENAI_KEY")
@@ -73,8 +75,11 @@ mentioned_tweets = load_mentioned_tweets()
 last_responded_tweet_id = mentioned_tweets[-1] if len(mentioned_tweets) > 0 else 0
 
 
+
+
 @app.route("/")
 def hello_world():
+    print("testings")
     return "X-Notes Twitter Bot"
 
 
@@ -84,6 +89,7 @@ def fetch_tweets():
 
     last_fetched_tweet_id = mentions.meta.get("newest_id", 0)  # handle case of missing/empty data
     if not mentions.data:
+        print("No new mentions")
         return "No new mention"
 
     for mention in reversed(mentions.data):
@@ -97,8 +103,15 @@ def fetch_tweets():
         tweet_text = mention.text
         # Generate your reply based on the mention
         reply_text = write_note(tweet_text)
+        print("reply",reply_text)
         # Reply to the mention
         client.create_tweet(in_reply_to_tweet_id=mention_id, text=reply_text)
     save_mentioned_tweets(mentioned_tweets)
 
     return f"last mentions id is {last_fetched_tweet_id}"
+
+
+if __name__ == '__main__':
+    scheduler.add_job(id='Scheduled Task', func=fetch_tweets, trigger="interval", seconds=900)
+    scheduler.start()
+    app.run()
