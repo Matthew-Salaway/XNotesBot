@@ -5,14 +5,13 @@ from flask_apscheduler import APScheduler
 import os
 import openai
 
-
 load_dotenv()
 app = Flask(__name__)
 scheduler = APScheduler()
 
 TWITTER_ID = os.getenv('TWITTER_ID')
 OPENAI_KEY = os.getenv("OPENAI_KEY")
-openai.api_key= OPENAI_KEY
+openai.api_key = OPENAI_KEY
 
 
 def load_client():
@@ -57,13 +56,14 @@ def save_mentioned_tweets(mentioned_tweets):
         for tweet_id in mentioned_tweets:
             file.write(str(tweet_id) + "\n")
 
+
 def write_note(content):
     prompt = f"I'm going to show you a Tweet and I would like you to make a note for this tweet. Notes are supposed to clarify potential misinformation present in the Tweet. A helpful Note should be accurate and important. I'd like you to create a Note based on a Tweet. Here is the Tweet: {content}."
     response = openai.ChatCompletion.create(
-    model="gpt-4-turbo",
-    messages=[{"role": "user", "content": prompt}],
-    max_tokens=100
-        )
+        model="gpt-4-turbo",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=100
+    )
     model_response = response['choices'][0]['message']['content']
     print(model_response)
     return model_response
@@ -75,8 +75,6 @@ mentioned_tweets = load_mentioned_tweets()
 last_responded_tweet_id = mentioned_tweets[-1] if len(mentioned_tweets) > 0 else 0
 
 
-
-
 @app.route("/")
 def hello_world():
     print("testings")
@@ -85,7 +83,7 @@ def hello_world():
 
 @app.route("/tweets")
 def fetch_tweets():
-    mentions = client.get_users_mentions(id=TWITTER_ID ,since_id=last_responded_tweet_id)
+    mentions = client.get_users_mentions(id=TWITTER_ID, since_id=last_responded_tweet_id)
 
     last_fetched_tweet_id = mentions.meta.get("newest_id", 0)  # handle case of missing/empty data
     if not mentions.data:
@@ -103,7 +101,7 @@ def fetch_tweets():
         tweet_text = mention.text
         # Generate your reply based on the mention
         reply_text = write_note(tweet_text)
-        print("reply",reply_text)
+        print("reply", reply_text)
         # Reply to the mention
         client.create_tweet(in_reply_to_tweet_id=mention_id, text=reply_text)
     save_mentioned_tweets(mentioned_tweets)
@@ -111,7 +109,5 @@ def fetch_tweets():
     return f"last mentions id is {last_fetched_tweet_id}"
 
 
-if __name__ == '__main__':
-    scheduler.add_job(id='Scheduled Task', func=fetch_tweets, trigger="interval", seconds=900)
-    scheduler.start()
-    app.run()
+scheduler.add_job(id='Scheduled Task', func=fetch_tweets, trigger="interval", seconds=90)
+scheduler.start()
