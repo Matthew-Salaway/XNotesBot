@@ -9,4 +9,4 @@ To run this repository:
 - Install the packages in requirements.txt.
 - Create a file called .env and paste credentials for CONSUMER_KEY, CONSUMER_SECRET, ACCESS_KEY and ACCESS_SECRET.
 - Run the command in the terminal: 
-```flask --app main run --debug```
+```flask --app main run --debug ``` or ```python -m flask --app main run --debug ```
