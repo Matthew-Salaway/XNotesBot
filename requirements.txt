@@ -13,7 +13,7 @@ python-dotenv==1.0.1
 requests==2.31.0
 requests-oauthlib==1.4.0
 tweepy==4.14.0
-urllib3==2.2.1
+urllib3==2.2.2
 Werkzeug==3.0.2
 flask_apscheduler==1.13.1
 openai~=1.23.2
